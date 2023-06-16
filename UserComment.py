@@ -137,7 +137,7 @@ def register_open_action(cmt_view):
 
 class my_plugin_t(ida_idaapi.plugin_t):
     flags = ida_idaapi.PLUGIN_HIDE                      # Plugin should not appear in the Edit, Plugins menu.
-    wanted_name = ""
+    wanted_name = "Hook and display user-added comments"
     wanted_hotkey = ""
     comment = "Hook and display user-added comments"
     help = ""
@@ -155,7 +155,7 @@ class my_plugin_t(ida_idaapi.plugin_t):
         
         register_open_action(self.cmt_view)             # Register to desktop widget and bind shortcut
         
-        # self.ui_hook = UIHooks(self.cmt_view)           # Refresh commnets viewer in real time 
+        self.ui_hook = UIHooks(self.cmt_view)           # Refresh commnets viewer in real time 
         self.ui_hook.hook()
         return ida_idaapi.PLUGIN_KEEP                   # Keep us in the memory
 
