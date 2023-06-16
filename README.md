@@ -6,7 +6,7 @@ An IDA plugin to display user-added comments in disassembly and pseudocode views
 
 ## Note
 
-This plugin is implemented based on hooking, meaning it can only capture and save the comments added by users after the plugin is installed.
+This plugin is implemented based on hooking, meaning it can only capture and save the user-added comments after the plugin is installed.
 
 <b>Any user comments added prior to the installation of the plugin will not be captured.</b>
 
@@ -25,6 +25,7 @@ There are three ways to open the comment window:
 
 - Provides a comment window, displaying user-added comments, including comments in assembly code and pseudocode.
 - Support for different types of comments (common comments, repeatable comments, anterior comments, and posterior comments).
+- Captured user-added comments will be preserved in the IDB.
 
 
 ## Contribution
