@@ -1,6 +1,10 @@
 # UserComment
 An IDA plugin to display user-added comments in disassembly and pseudocode views.
 
+## Installation
+
+Copy the `UserComment.py` file to the `plugins` folder in the IDA installation directory.
+
 ## Usage
 
 3 ways to open the comment viewer
