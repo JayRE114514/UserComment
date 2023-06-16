@@ -4,23 +4,30 @@
 
 An IDA plugin to display user-added comments in disassembly and pseudocode views.
 
+## Note
+
+This plugin is implemented based on hooking, meaning it can only capture and save the comments added by users after the plugin is installed.
+
+<b>Any user comments added prior to the installation of the plugin will not be captured.</b>
+
 ## Installation
 
 Copy the `UserComment.py` file to the `plugins` folder in the IDA installation directory.
 
 ## Usage
 
-3 ways to open the comment viewer
-1. View/Open subviews/Comments
-2. Using a shortcut key (`Ctrl-Shift-C`)
+There are three ways to open the comment window:
+1. Choose 'View/Open subviews/Comments' from the menu
+2. Use the shortcut (Ctrl-Shift-C)
 3. Press `Ctrl-!`, then choose "Comments"
 
 ## Features
 
-- Hook and display user-added comments, including comments in assembly code and pseudocode.
-- Support for different types of comments, such as common comments, repeatable comments, anterior comments, and posterior comments.
-- Provides a comment viewer window for users to browse the added comments.
+- Provides a comment window, displaying user-added comments, including comments in assembly code and pseudocode.
+- Support for different types of comments (common comments, repeatable comments, anterior comments, and posterior comments).
+
 
 ## Contribution
 
-Contributions to the UserComment Plugin are welcome! If you find any issues, have improvement suggestions, or want to add new features, please submit an issue or a pull request.
+If you encounter any issues, have suggestions for improvements, or want to add new features, please submit an issue or a pull request.
+If you have any other questions, please feel free to ask.
