@@ -26,6 +26,8 @@ There are three ways to open the comment window:
 - Provides a comment window, displaying user-added comments, including comments in assembly code and pseudocode.
 - Support for different types of comments (common comments, repeatable comments, anterior comments, and posterior comments).
 - Captured user-added comments will be preserved in the IDB.
+- Double-click on a comment entry to quickly navigate to the corresponding location.
+- Use IDA's built-in chooser, providing a handy filter functionality.
 
 
 ## Contribution
