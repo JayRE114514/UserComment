@@ -28,7 +28,10 @@ class UserAddedComments():
 
     def add_comment(self, ea, cmt_type, comment, line_num=None):
         key = (hex(ea), cmt_type, line_num)
-        self.comments[key] = comment
+        if not comment:
+            self.comments.pop(key, 0)
+        else:
+            self.comments[key] = comment
         self.save_comments()
 
 class UIHooks(ida_kernwin.UI_Hooks):
