@@ -8,6 +8,8 @@ UserComment Plugin 是一个用于IDA的插件，用于显示用户添加的注�
 
 <b>对于在安装插件之前添加的用户注释，该插件无法获取到。</b>
 
+插件使用python3编写, 适用于使用python3的IDA7.x，IDA8.x请自行测试。
+
 ## 安装
 
 将 `UserComment.py` 文件复制到IDA插件目录的 `plugins` 文件夹下。
@@ -22,7 +24,10 @@ UserComment Plugin 是一个用于IDA的插件，用于显示用户添加的注�
 ## 功能
 
 - 提供注释窗口, 显示用户添加的注释，包括汇编代码和伪代码中的注释。
-- 支持多种类型的注释（common comments, repeatable comments, anterior comments, and posterior comments）。
+- 支持不同类型的注释，包括常规注释、可重复注释、前置注释、后置注释、伪代码注释和函数注释。
+- 用户注释将在IDB文件中保留。
+- 双击注释条目可以快速跳转到对应的位置。
+- 使用IDA内置的选择器，提供便捷的筛选功能。
 
 ## 贡献
 
