@@ -10,6 +10,8 @@ This plugin is implemented based on hooking, meaning it can only capture and sav
 
 <b>Any user comments added prior to the installation of the plugin will not be captured.</b>
 
+The plugin is written in Python 3, and it's suitable for IDA 7.x versions that use Python 3. For IDA 8.x, please test it yourself.
+
 ## Installation
 
 Copy the `UserComment.py` file to the `plugins` folder in the IDA installation directory.
@@ -24,7 +26,7 @@ There are three ways to open the comment window:
 ## Features
 
 - Provides a comment window, displaying user-added comments, including comments in assembly code and pseudocode.
-- Support for different types of comments (common comments, repeatable comments, anterior comments, and posterior comments).
+- Support for different types of comments (common, repeatable, anterior, posterior, pseudocode and function comments).
 - Captured user-added comments will be preserved in the IDB.
 - Double-click on a comment entry to quickly navigate to the corresponding location.
 - Use IDA's built-in chooser, providing a handy filter functionality.
