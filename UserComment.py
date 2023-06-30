@@ -6,13 +6,19 @@ import ida_netnode
 import idc
 import ida_bytes
 import ida_hexrays
+import ida_nalt
 import pickle
 
 title = "Comments"
+
+# def show_warning(msg):
+    # ida_kernwin.warning(msg)
+
 class UserAddedComments():
     def __init__(self):
         self.netnode = ida_netnode.netnode()
         self.netnode.create("$ UserAddedComments")
+        self.imagebase = ida_nalt.get_imagebase()
         self.load_comments()
 
     def save_comments(self):
@@ -27,12 +33,14 @@ class UserAddedComments():
             self.comments = {}
 
     def add_comment(self, ea, cmt_type, comment, line_num=None):
-        key = (hex(ea), cmt_type, line_num)
+        offset = ea - self.imagebase
+        key = (offset, cmt_type, line_num)
         if not comment:
             self.comments.pop(key, 0)
         else:
             self.comments[key] = comment
         self.save_comments()
+
 
 class UIHooks(ida_kernwin.UI_Hooks):
     def __init__(self, cmt_view):
@@ -43,42 +51,65 @@ class UIHooks(ida_kernwin.UI_Hooks):
         if ida_kernwin.get_widget_title(widget) == title:
             self.cmt_view.Refresh()
 
+
 class PseudoHooks(ida_hexrays.Hexrays_Hooks):
-    def __init__(self, comments):
+    def __init__(self, usr_cmt):
         ida_hexrays.Hexrays_Hooks.__init__(self)
-        self.comments = comments
+        self.usr_cmt = usr_cmt
 
     def cmt_changed(self, cfunc, loc, cmt):
-        self.comments.add_comment(loc.ea, 'pseudocode', cmt)
+        self.usr_cmt.add_comment(loc.ea, 'pseudocode', cmt)
         return 0
 
-class DisasmHooks(ida_idp.IDB_Hooks):
-    def __init__(self, comments):
-        ida_idp.IDB_Hooks.__init__(self)
-        self.comments = comments
 
+class DisasmHooks(ida_idp.IDB_Hooks):
+    def __init__(self, usr_cmt):
+        ida_idp.IDB_Hooks.__init__(self)
+        self.usr_cmt = usr_cmt
+        self.rebased = False
+        
+    # hook common and repeatable cmts
     def changing_cmt(self, ea, is_repeatable, new_comment):
         cur_ea = idc.here()
         if cur_ea == ea:
             # solve start_ea problems
             cur = ida_kernwin.get_cursor()
             if (cur != (True, 0, 0)):
+                # Fix rebasing bug: Rebase pragram will trigger 'changing_cmt', causing to capture auto cmts at ea.
+                if self.rebased:
+                    self.rebased = False
+                    return 0
                 if is_repeatable:
-                    self.comments.add_comment(ea, 'repeatable', new_comment)
+                    self.usr_cmt.add_comment(ea, 'repeatable', new_comment)
                 else:
-                    self.comments.add_comment(ea, 'common', new_comment)
+                    self.usr_cmt.add_comment(ea, 'common', new_comment)
         return 0
-
+        
+    # hook anterior and posterior cmts
     def extra_cmt_changed(self, ea, line_idx, cmt):
         cur_ea = idc.here()
         if cur_ea == ea:
             cur = ida_kernwin.get_cursor()
             if (cur != (True, 0, 0)):
                 if line_idx // 1000 == 1: # line_idx = 1xxx
-                    self.comments.add_comment(ea, 'anterior', cmt, line_num=line_idx % 1000)
+                    self.usr_cmt.add_comment(ea, 'anterior', cmt, line_num=line_idx % 1000)
                 if line_idx // 1000 == 2: # line_idx = 2xxx
-                    self.comments.add_comment(ea, 'posterior', cmt, line_num=line_idx % 1000)
+                    self.usr_cmt.add_comment(ea, 'posterior', cmt, line_num=line_idx % 1000)
         return 0
+        
+    # hook Function cmts and repeatable Function cmts
+    def changing_range_cmt(self, kind, a, cmt, is_repeatable):
+        if is_repeatable:
+            self.usr_cmt.add_comment(a.start_ea, 'func_repeatable', cmt)
+        else:
+            self.usr_cmt.add_comment(a.start_ea, 'func_common', cmt)
+        return 0
+        
+    # program image rebased
+    def allsegs_moved(self, info):
+        self.rebased = True
+        self.usr_cmt.imagebase = ida_nalt.get_imagebase()
+        
         
 class CommentViewer(ida_kernwin.Choose):
     def __init__(self, usr_cmt):
@@ -86,14 +117,15 @@ class CommentViewer(ida_kernwin.Choose):
             self,
             title,
             [ ["Address", 10 | ida_kernwin.Choose.CHCOL_HEX],
-              ["Type", 10 | ida_kernwin.Choose.CHCOL_PLAIN],
-              ["Comments", 30 | ida_kernwin.Choose.CHCOL_PLAIN]])
+              ["Type", 20 | ida_kernwin.Choose.CHCOL_PLAIN],
+              ["Comments", 30 | ida_kernwin.Choose.CHCOL_PLAIN]],
+            flags = ida_kernwin.Choose.CH_CAN_REFRESH)
         self.usr_cmt = usr_cmt
         self.items = []
 
     def OnInit(self):
         self.usr_cmt.load_comments()  # load comments again
-        self.items = [ [k[0], k[1], v] for k, v in self.usr_cmt.comments.items() ]
+        self.items = [ [hex(k[0] + self.usr_cmt.imagebase), k[1], v] for k, v in self.usr_cmt.comments.items() ]
         return True
 
     def OnGetSize(self):
@@ -109,9 +141,10 @@ class CommentViewer(ida_kernwin.Choose):
         return None # call standard refresh
 
     def OnSelectLine(self, n):
-        selected_item = self.items[n]
+        selected_item = self.items[n]     # for single selection chooser
         addr = int(selected_item[0], 16)
         ida_kernwin.jumpto(addr)
+
 
 def register_open_action(cmt_view):
     """
@@ -137,6 +170,7 @@ def register_open_action(cmt_view):
         f"View/Open subviews/{title}",
         action_name,
         ida_kernwin.SETMENU_APP)
+
 
 class my_plugin_t(ida_idaapi.plugin_t):
     flags = ida_idaapi.PLUGIN_HIDE                      # Plugin should not appear in the Edit, Plugins menu.
@@ -171,6 +205,7 @@ class my_plugin_t(ida_idaapi.plugin_t):
         self.ray_hook.unhook()
         self.idb_hook.unhook()
         return
+
 
 def PLUGIN_ENTRY():
     return my_plugin_t()
